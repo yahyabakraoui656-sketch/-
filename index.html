@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Prompt Trail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400..700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* palette from the "From Charter to the Classroom" deck and the Charter Passports */
+  --ink:#123B33; --ink-2:#174D40; --paper:#FAF5EA; --card:#FFFDF8; --sand:#F3EBDA; --line:#E8DCC4;
+  --gold:#C9973A; --gold-ink:#8A6414; --text:#3D4A45; --muted:#5F6B66;
+  --ni:#7B1E3A; --fe:#0E6B43; --sk:#8A6414; --extra:#5A4E8C;
+  --display:'Reem Kufi','Trebuchet MS',sans-serif;
+  --body:'Atkinson Hyperlegible',Arial,sans-serif;
+  /* layout: the form on the left, the live prompt pinned on the right; stacked on phones */
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--paper);color:var(--text);font:17px/1.5 var(--body)}
+h1,h2,h3{font-family:var(--display);color:var(--ink);text-wrap:balance;margin:0}
+p{margin:0}
+button,select{font-family:var(--body)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+.hero{background:var(--ink);color:var(--paper);padding:28px 20px 26px}
+.hero .in{max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.hero h1{color:var(--paper);font-size:clamp(36px,6vw,56px);line-height:1;font-weight:700;margin:8px 0 10px}
+.hero h1 span{color:var(--gold)}
+.lede{font-size:18px;color:#D9E6E0;max-width:60ch}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding:0;list-style:none;font-size:14px}
+.steps li{background:var(--ink-2);border:1px solid rgba(201,151,58,.5);border-radius:999px;padding:4px 12px;color:#D9E6E0}
+.steps b{color:var(--gold)}
+
+.layout{max-width:1200px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:24px;align-items:start}
+@media (max-width:980px){.layout{grid-template-columns:minmax(0,1fr)}}
+.form{display:flex;flex-direction:column;gap:18px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+@media (max-width:560px){.card{padding:18px 14px}.layout{padding:18px 12px 48px}.hero{padding:24px 16px 20px}}
+.card-h{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+.card-h .n{font-family:var(--display);font-size:34px;font-weight:700;color:var(--gold);line-height:1}
+.card-h h2{font-size:24px;font-weight:600}
+.card-h .hint{margin-left:auto}
+.hint{font-size:14px;color:var(--muted)}
+.top-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--sand);border-radius:12px;padding:8px 12px;font-size:15px}
+
+input[type=text],select{font:16px var(--body);border:2px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;color:var(--text);width:100%}
+select{cursor:pointer;padding-right:8px}
+input:focus,select:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px rgba(201,151,58,.25)}
+label.l{display:block;font-weight:700;font-size:15px;color:var(--ink);margin-bottom:6px}
+.two{display:grid;grid-template-columns:1fr 2fr;gap:12px}
+@media (max-width:640px){.two{grid-template-columns:1fr}}
+
+/* stages */
+.stages{display:flex;flex-direction:column;gap:8px}
+.stage{display:grid;grid-template-columns:34px 1fr 130px;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.stage .k{width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+.stage .nm{font-weight:700;color:var(--ink);display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.stage .nm select{width:auto;padding:5px 8px;font-size:15px;font-weight:700;color:var(--ink)}
+.stage .t select{padding:7px 8px}
+.stage .act{grid-column:2/4}
+.ws{grid-column:2/4;background:var(--sand);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.ws-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.wsbtn{position:relative;display:inline-flex;align-items:center;gap:8px;border:2px dashed var(--gold-ink);border-radius:999px;padding:6px 14px;font-weight:700;font-size:15px;color:var(--gold-ink);background:#fff;cursor:pointer}
+.wsbtn:hover{background:#FFF8E8}
+.wsbtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.wsbtn:focus-within{outline:3px solid var(--gold);outline-offset:2px}
+.wsname{font-size:15px;color:var(--ink);font-weight:700}
+.wsname.none{color:var(--muted);font-weight:400}
+.ws details summary{cursor:pointer;font-size:14px;color:var(--gold-ink);font-weight:700}
+.ws textarea{margin-top:6px;width:100%;min-height:80px;font:15px var(--body);border:2px solid var(--line);border-radius:10px;padding:8px 10px;resize:vertical;background:#fff;color:var(--text)}
+.ws textarea:focus{border-color:var(--gold);outline:none}
+.attach{margin-top:12px;background:#FFF3D6;color:var(--ink);border-radius:12px;padding:10px 14px;font-size:15px;line-height:1.45;border-left:5px solid var(--gold)}
+.attach b{color:var(--ni)}
+.stage .act input{padding:8px 12px;font-size:15px}
+@media (max-width:480px){.stage{grid-template-columns:30px 1fr 104px;gap:8px}.stage .act,.ws{grid-column:1/4}}
+.total{margin-top:10px;font-size:15px;font-weight:700;color:var(--ink);display:flex;justify-content:flex-end}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:15px;cursor:pointer;color:var(--text);line-height:1.3;text-align:left}
+.chip:hover{border-color:var(--c,var(--gold))}
+.vchip{--c:var(--ni);border-color:color-mix(in srgb,var(--c) 30%,#fff);color:var(--c)}
+.vchip[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:#fff}
+.pillar{margin-top:12px}
+.pillar:first-of-type{margin-top:0}
+.pillar h3{font-family:var(--body);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--c);margin-bottom:6px;font-weight:700}
+.c-ni{--c:var(--ni)}.c-fe{--c:var(--fe)}.c-sk{--c:var(--sk)}
+.idea{font-size:14px;padding:4px 11px}
+
+/* chosen values x stages */
+.chosen{margin-top:16px;border-top:2px dashed var(--line);padding-top:14px}
+.chosen h3{font-size:18px;font-weight:600;margin-bottom:8px}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.crow:last-child{border-bottom:0}
+.crow .vn{font-weight:700;color:var(--c);font-size:15px;display:flex;align-items:center;gap:8px}
+.crow .vn i{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.crow .need{display:block;font-size:13px;color:var(--ni);font-weight:400}
+.sbtns{display:flex;gap:4px;flex-wrap:wrap}
+.sb{border:2px solid var(--line);background:#fff;border-radius:8px;padding:4px 8px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+.sb[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+@media (max-width:640px){.crow{grid-template-columns:1fr}}
+.empty-note{font-size:15px;color:var(--muted)}
+
+/* extras */
+.xchip{--c:var(--extra);border-color:#DAD5EC;color:var(--extra);font-weight:700}
+.xchip::before{content:"+ "}
+.xchip[aria-pressed="true"]{background:var(--extra);border-color:var(--extra);color:#fff}
+.xchip[aria-pressed="true"]::before{content:"\2713  "}
+.own{display:flex;gap:8px;margin-top:12px}
+.own input{flex:1}
+.mine{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.mine div{display:flex;gap:8px;align-items:center;background:#F1EEF9;border-radius:10px;padding:6px 10px;font-size:15px;color:#3E3470}
+.mine div span{flex:1}
+.x{border:0;background:none;color:var(--extra);font-size:20px;line-height:1;cursor:pointer;padding:0 4px}
+
+/* buttons */
+.btn{font:700 16px var(--body);border-radius:999px;padding:10px 18px;border:2px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;line-height:1.2;white-space:nowrap}
+.btn:hover{background:var(--ink-2)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--sand)}
+.btn.small{padding:5px 12px;font-size:14px}
+.btn.big{background:var(--gold);border-color:var(--gold);color:var(--ink);font-size:18px;padding:12px 24px}
+.btn.big:hover{background:#D7A64B}
+
+/* prompt panel */
+.panel{position:sticky;top:16px}
+@media (max-width:980px){.panel{position:static}}
+.pbox{background:var(--ink);border-radius:20px;padding:18px;color:var(--paper);box-shadow:0 14px 34px rgba(18,59,51,.2)}
+.pbox-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.pbox-h h2{color:var(--paper);font-size:24px;font-weight:600}
+.seg-ctl{display:inline-flex;border:2px solid var(--gold);border-radius:999px;padding:3px;gap:3px}
+.seg-ctl button{border:0;border-radius:999px;padding:5px 13px;font-size:14px;font-weight:700;background:transparent;color:var(--paper);cursor:pointer}
+.seg-ctl button[aria-pressed="true"]{background:var(--gold);color:var(--ink)}
+.ptext{background:#fff;color:var(--text);border-radius:12px;padding:14px 16px;font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;max-height:calc(100vh - 290px);min-height:220px;overflow:auto}
+@media (max-width:980px){.ptext{max-height:none}}
+mark{background:#F6E7C1;color:var(--ink);padding:0 2px;border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+mark.empty{background:#FBE1E1;color:#8A1C1C}
+mark.x{background:#E7E3F4;color:#3E3470}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:#BFD2CA;margin-top:8px}
+.legend mark{font-weight:700}
+.pact{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.pact .btn.ghost{color:var(--paper);border-color:var(--paper)}
+.pact .btn.ghost:hover{background:var(--ink-2)}
+.copied{font-size:14px;font-weight:700;color:#9FE0BA;min-height:1em}
+.after{margin-top:12px;background:var(--ink-2);border-radius:12px;padding:10px 14px;font-size:14px;color:#D9E6E0;line-height:1.45}
+.after b{color:var(--gold)}
+.recipe{margin-top:12px;font-size:13px;color:#BFD2CA}
+.recipe b{color:var(--paper)}
+.jump{display:none}
+@media (max-width:980px){.jump{display:inline-flex}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="in">
+    <div>
+      <p class="eyebrow">From Charter to the Classroom · Teacher practice</p>
+      <h1>The Prompt <span>Trail</span></h1>
+      <p class="lede">Fill in your lesson and click the extras you want. Your prompt writes itself on the right. Copy it into free ChatGPT or Claude to build your lesson as a board game.</p>
+      <ol class="steps"><li><b>1</b> Stages and times</li><li><b>2</b> Goal and theme</li><li><b>3</b> Charter values</li><li><b>4</b> Little prompts</li><li><b>5</b> Copy and paste</li></ol>
+    </div>
+    <a class="btn big jump" href="#panel">See my prompt ↓</a>
+  </div>
+</header>
+
+<main class="layout">
+  <div class="form">
+
+    <div class="top-row">
+      <span id="exText">The AIDA lesson is filled in as an example.</span>
+      <span style="display:flex;gap:8px"><button type="button" class="btn small ghost" id="clearBtn">Clear all and start mine</button><button type="button" class="btn small ghost" id="exBtn" style="display:none">Show the example</button></span>
+    </div>
+
+    <section class="card" aria-labelledby="h-st">
+      <div class="card-h"><span class="n">1</span><h2 id="h-st">Lesson stages</h2><span class="hint">Choose a time and say what will happen</span></div>
+      <div class="stages" id="stages"></div>
+      <p class="total" id="total"></p>
+    </section>
+
+    <section class="card" aria-labelledby="h-goal">
+      <div class="card-h"><span class="n">2</span><h2 id="h-goal">Goal and theme</h2></div>
+      <div class="two">
+        <div><label class="l" for="f-cls">Subject and grade</label><input type="text" id="f-cls" data-f="cls" placeholder="e.g. Grade 8 Science"></div>
+        <div><label class="l" for="f-goal">By the end of the lesson, students will…</label><input type="text" id="f-goal" data-f="goal" placeholder="e.g. explain the water cycle and draw it with labels"></div>
+      </div>
+      <div style="margin-top:14px">
+        <label class="l" for="f-theme">Theme of the game</label>
+        <input type="text" id="f-theme" data-f="theme" placeholder="Write your own theme">
+        <div class="chips" style="margin-top:8px" aria-label="Theme ideas">
+          <span class="hint" style="align-self:center">Ideas:</span>
+          <button type="button" class="chip idea" data-idea="Each team’s own business grows at every stop">A business that grows</button>
+          <button type="button" class="chip idea" data-idea="A journey across the UAE, with one stop in each emirate">A journey across the UAE</button>
+          <button type="button" class="chip idea" data-idea="Each team builds its own science lab, one stop at a time">A science lab</button>
+          <button type="button" class="chip idea" data-idea="Each team builds a city that grows at every stop">A city you build</button>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:10px;color:var(--ni);font-weight:700">No student names or personal details.</p>
+    </section>
+
+    <section class="card" aria-labelledby="h-val">
+      <div class="card-h"><span class="n">3</span><h2 id="h-val">Charter values</h2><span class="hint">Click the values, then pick the stage</span></div>
+      <div id="pillars"></div>
+      <div class="chosen">
+        <h3>When will students achieve them?</h3>
+        <div id="chosen"></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="h-x">
+      <div class="card-h"><span class="n">4</span><h2 id="h-x">Little prompts</h2><span class="hint">Click to add them to your prompt</span></div>
+      <div class="chips" id="extras"></div>
+      <div class="own">
+        <input type="text" id="ownText" placeholder="Write your own little prompt, e.g. Add a quiz with 3 questions at the starter" aria-label="Write your own little prompt">
+        <button type="button" class="btn" id="ownAdd">Add</button>
+      </div>
+      <div class="mine" id="mine"></div>
+    </section>
+
+  </div>
+
+  <aside class="panel" id="panel" aria-labelledby="h-p">
+    <div class="pbox">
+      <div class="pbox-h">
+        <h2 id="h-p"><span style="color:var(--gold)">5</span> Your prompt</h2>
+        <div class="seg-ctl" role="group" aria-label="I am using">
+          <button type="button" data-tool="chatgpt" aria-pressed="false">ChatGPT</button>
+          <button type="button" data-tool="claude" aria-pressed="true">Claude</button>
+        </div>
+      </div>
+      <div class="ptext" id="ptext" tabindex="0" aria-label="Your prompt"></div>
+      <div class="legend"><span><mark>Yellow</mark> your lesson</span><span><mark class="x">Purple</mark> little prompts</span><span><mark class="empty">Pink</mark> still empty</span></div>
+      <div class="pact">
+        <button type="button" class="btn big" id="copyBtn">Copy my prompt</button>
+        <a class="btn ghost" id="openBtn" href="https://claude.ai/new" target="_blank" rel="noopener">Open Claude ↗</a>
+      </div>
+      <p class="copied" id="copied" aria-live="polite"></p>
+      <div class="attach" id="attachNote" hidden></div>
+      <div class="after" id="after"></div>
+      <p class="recipe"><b>The recipe:</b> who the AI is + your lesson + what to build + extras + rules.</p>
+    </div>
+  </aside>
+</main>
+
+<script>
+(function(){
+"use strict";
+var LS="promptTrail.builder.v1";
+var TOOL={chatgpt:{name:"ChatGPT",url:"https://chatgpt.com/"},claude:{name:"Claude",url:"https://claude.ai/new"}};
+var STAGES=[
+  {id:"welcome",name:"Welcome",short:"Welcome"},
+  {id:"starter",name:"Starter",short:"Starter"},
+  {id:"intro",name:"Introduction",short:"Intro"},
+  {id:"group",name:"Group activity",short:"Group"},
+  {id:"assess",name:"",short:"Assess"}
+];
+var ASSESS=["Self-assessment","Peer assessment","Exit ticket"];
+var TIMES=[1,2,3,4,5,6,7,8,10,12,15,20,25,30];
+var PILLARS=[
+  {id:"ni",name:"National Identity",items:["Integrity","Loyalty to the homeland and belonging to it","Initiative and perseverance","Flexibility and adaptability","Respect and kindness","Generosity and humility"]},
+  {id:"fe",name:"Features",items:["Physical and mental health","Self-confidence","Teamwork","Self-regulation and discipline","Continuing education","Cultural awareness"]},
+  {id:"sk",name:"Skills",items:["Reading and writing","Mastering artificial intelligence","Effective communication","Critical thinking","Financial literacy","Numeracy skills","Creativity"]}
+];
+var ALLV=[];PILLARS.forEach(function(p){p.items.forEach(function(n){ALLV.push({name:n,p:p.id});});});
+var EXTRAS=[
+  {id:"clock",chip:"Add a clock to each stage",line:"Add a countdown clock to each stage that uses that stage’s minutes, with start and pause buttons."},
+  {id:"arabic",chip:"Add an Arabic button to each stage",line:"Add an English / العربية button to each stage that switches all the text to Arabic and right to left."},
+  {id:"teams",chip:"Add team names on a welcome page",line:"Start with a welcome page where each team types its name and picks an emoji as its game piece."},
+  {id:"score",chip:"Add a score board",line:"Show a score board with each team’s points and stamps."},
+  {id:"levels",chip:"Add levels to the group activity",line:"In the group activity, give the task at four levels: Seed (easiest), Flower, Sun and Tree (hardest)."},
+  {id:"big",chip:"Make it big for the class board",line:"Make all text and buttons big enough to read from the back of the classroom."},
+  {id:"sound",chip:"Add a sound when a stamp lights up",line:"Play a short happy sound when a stamp lights up, made with the Web Audio API (no sound files)."},
+  {id:"confetti",chip:"Add confetti at the end",line:"Show confetti and a “Well done!” message when a team has earned all its stamps."},
+  {id:"frame",chip:"Add “I earned ___ when I ___”",line:"At the last stage, add the sentence frame “I earned ___ when I ___.” for each team to complete."},
+  {id:"wsup",chip:"Let teams upload their finished worksheet",line:"In the group activity, add a button where each team can upload a photo of its finished worksheet and see it on the screen."},
+  {id:"reset",chip:"Add a teacher reset button",line:"Add a small teacher button that resets the game for the next class."}
+];
+var EXAMPLE={
+  tool:"claude",cls:"Grade 10 Business Studies",
+  goal:"explain the AIDA model and use it to create an advert for their own business",
+  theme:"Each team’s own business grows as it travels across Al Ain to the top of Jebel Hafeet",
+  times:{welcome:3,starter:7,intro:12,group:12,assess:6},assess:"Self-assessment",
+  acts:{welcome:"class rules and today’s objectives",starter:"watch an advert trailer and give our own AIDA Awards",intro:"learn the four AIDA stages, then an individual paper task",group:"each team makes one AIDA advert for its business, every role counts",assess:"quick understanding check and self-assessment"},
+  values:{"Loyalty to the homeland and belonging to it":["welcome"],"Initiative and perseverance":["starter"],"Critical thinking":["starter","assess"],"Teamwork":["group"],"Creativity":["group"],"Continuing education":["assess"]},
+  order:["Loyalty to the homeland and belonging to it","Initiative and perseverance","Critical thinking","Teamwork","Creativity","Continuing education"],
+  extras:{clock:true,arabic:true},mine:[],ws:{name:"",text:""},example:true
+};
+function blank(){return {tool:state?state.tool:"claude",cls:"",goal:"",theme:"",times:{welcome:3,starter:5,intro:10,group:15,assess:5},assess:"Exit ticket",acts:{welcome:"",starter:"",intro:"",group:"",assess:""},values:{},order:[],extras:{clock:true,arabic:true},mine:[],ws:{name:"",text:""},example:false};}
+var state=null;
+state=JSON.parse(JSON.stringify(EXAMPLE));
+function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
+function load(){try{var s=localStorage.getItem(LS);return s?JSON.parse(s):null;}catch(e){return null;}}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+function pillarOf(name){var v=ALLV.filter(function(x){return x.name===name;})[0];return v?v.p:"ni";}
+function stageName(s){return s.id==="assess"?state.assess:s.name;}
+
+/* ---- prompt ---- */
+var Y1="⟦",Y2="⟧",P1="⟪",P2="⟫";
+function y(x,ph){x=String(x||"").trim();return Y1+(x||"["+ph+"]")+Y2;}
+function p(x){return P1+x+P2;}
+function buildPrompt(){
+  var s=state,out=[];
+  out.push("You are a teacher and a game designer.");
+  out.push("Build my lesson as a board game on ONE HTML page "+(s.tool==="claude"?"as an HTML artifact, so I can play it in the preview.":"in a canvas, so I can preview it."));
+  var goal=String(s.goal||"").trim().replace(/\.$/,"");
+  out.push("My class: "+y(s.cls,"subject and grade")+" in the UAE.\nBy the end of the lesson, students will "+y(goal,"what students will achieve")+".\nTheme: "+y(s.theme,"your theme")+".");
+  var lines=STAGES.map(function(st,i){
+    var vals=s.order.filter(function(n){return (s.values[n]||[]).indexOf(st.id)>-1;});
+    var stamp=vals.length?" Charter stamp"+(vals.length>1?"s":"")+": "+y(vals.join(", "))+".":"";
+    var act=String((s.acts||{})[st.id]||"").trim().replace(/\.$/,"");
+    return (i+1)+". "+y(stageName(st))+" ("+y(s.times[st.id]+" min")+")"+(act?": "+y(act):"")+"."+stamp;
+  });
+  var total=STAGES.reduce(function(a,st){return a+(+s.times[st.id]||0);},0);
+  out.push("Each stage of my "+y(total+"-minute")+" lesson is a stop on the game map:\n"+lines.join("\n"));
+  var ws=s.ws||{},wsText=String(ws.text||"").trim();
+  if(ws.name&&wsText)out.push("For the group activity, I have attached my worksheet ("+y(ws.name)+"). Here are its questions too:\n"+y(wsText)+"\nTurn the worksheet into the group activity task and show its questions on the screen.");
+  else if(ws.name)out.push("For the group activity, I have attached my worksheet ("+y(ws.name)+"). Turn it into the group activity task and show its questions on the screen.");
+  else if(wsText)out.push("For the group activity, use this worksheet:\n"+y(wsText)+"\nTurn it into the group activity task and show its questions on the screen.");
+  var floating=s.order.filter(function(n){return !(s.values[n]||[]).length;});
+  if(floating.length)out.push("Also build these Charter values during the lesson: "+y(floating.join(", "))+".");
+  out.push("At each stop, turn what I plan into a short, fun game task that helps students reach the lesson goal. If I left a stage blank, make up a task for it. Show the stop’s Charter stamps on the screen, with a “We finished!” button that lights up the stamps in a team passport.");
+  var ex=EXTRAS.filter(function(e){return s.extras[e.id];}).map(function(e){return "- "+p(e.line);});
+  (s.mine||[]).forEach(function(m){ex.push("- "+p(m));});
+  if(ex.length)out.push("Also:\n"+ex.join("\n"));
+  out.push("Put all the HTML, CSS and JavaScript in one file, with no outside images or links (use emoji or simple shapes). Use big, clear buttons. Keep the code short enough to finish in one reply.");
+  return out.join("\n\n");
+}
+function plain(t){return t.replace(/[⟦⟧⟪⟫]/g,"");}
+function showPrompt(t){
+  return esc(t).replace(/⟦([\s\S]*?)⟧/g,function(m,i){return /^\[.*\]$/.test(i)?'<mark class="empty">'+i+"</mark>":"<mark>"+i+"</mark>";})
+    .replace(/⟪([\s\S]*?)⟫/g,'<mark class="x">$1</mark>');
+}
+
+/* ---- render ---- */
+function renderStages(){
+  $("stages").innerHTML=STAGES.map(function(st,i){
+    var name=st.id==="assess"
+      ? '<select id="assessType" aria-label="Type of assessment">'+ASSESS.map(function(a){return '<option'+(a===state.assess?" selected":"")+'>'+a+'</option>';}).join("")+'</select>'
+      : esc(st.name);
+    var opts=TIMES.map(function(t){return '<option value="'+t+'"'+(+state.times[st.id]===t?" selected":"")+'>'+t+' min</option>';}).join("");
+    var ph={welcome:"e.g. class rules and today’s objectives",starter:"e.g. quiz race on last lesson",intro:"e.g. short video, then notes",group:"e.g. each team makes a poster",assess:"e.g. 3 questions to check understanding"}[st.id];
+    return '<div class="stage"><span class="k">'+(i+1)+'</span><span class="nm">'+name+'</span><span class="t"><select data-time="'+st.id+'" aria-label="Time for '+esc(st.name||"assessment")+'">'+opts+'</select></span>'+
+      '<span class="act"><input type="text" data-act="'+st.id+'" value="'+esc((state.acts||{})[st.id]||"")+'" placeholder="What will happen? '+esc(ph)+'" aria-label="What will happen at '+esc(stageName(st))+'"></span>'+
+      (st.id==="group"?wsHTML():"")+'</div>';
+  }).join("");
+  var total=STAGES.reduce(function(a,st){return a+(+state.times[st.id]||0);},0);
+  $("total").textContent="Total lesson time: "+total+" minutes";
+}
+function wsHTML(){
+  var ws=state.ws||{name:"",text:""};
+  return '<div class="ws"><div class="ws-row"><label class="wsbtn">Upload a worksheet<input type="file" id="wsFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.png,.jpg,.jpeg" aria-label="Upload a worksheet for the group activity"></label>'+
+    (ws.name?'<span class="wsname">'+esc(ws.name)+'</span><button type="button" class="x" id="wsRemove" aria-label="Remove worksheet">×</button>':'<span class="wsname none">Optional. PDF, Word, picture or text file.</span>')+'</div>'+
+    '<details'+(ws.text?" open":"")+'><summary>Or paste the worksheet questions</summary><textarea id="wsText" aria-label="Worksheet questions" placeholder="1. What does the A in AIDA stand for?&#10;2. …">'+esc(ws.text||"")+'</textarea></details></div>';
+}
+function renderValues(){
+  $("pillars").innerHTML=PILLARS.map(function(pl){
+    return '<div class="pillar c-'+pl.id+'"><h3>'+pl.name+'</h3><div class="chips">'+pl.items.map(function(n){
+      return '<button type="button" class="chip vchip c-'+pl.id+'" data-v="'+esc(n)+'" aria-pressed="'+(state.order.indexOf(n)>-1)+'">'+esc(n)+'</button>';
+    }).join("")+'</div></div>';
+  }).join("");
+  if(!state.order.length){$("chosen").innerHTML='<p class="empty-note">Click a value above. It will appear here so you can choose its stage.</p>';return;}
+  $("chosen").innerHTML=state.order.map(function(n){
+    var st=state.values[n]||[];
+    return '<div class="crow c-'+pillarOf(n)+'"><span class="vn"><i></i><span>'+esc(n)+(st.length?"":'<span class="need">Pick a stage</span>')+'</span></span><span class="sbtns">'+
+      STAGES.map(function(s){return '<button type="button" class="sb" data-vs="'+esc(n)+'" data-s="'+s.id+'" aria-pressed="'+(st.indexOf(s.id)>-1)+'" aria-label="'+esc(n)+' at '+esc(stageName(s))+'">'+(s.id==="assess"?esc(state.assess.split(" ")[0]):s.short)+'</button>';}).join("")+
+      '<button type="button" class="x" data-rm="'+esc(n)+'" aria-label="Remove '+esc(n)+'">×</button></span></div>';
+  }).join("");
+}
+function renderExtras(){
+  $("extras").innerHTML=EXTRAS.map(function(e){return '<button type="button" class="chip xchip" data-x="'+e.id+'" aria-pressed="'+(!!state.extras[e.id])+'">'+esc(e.chip)+'</button>';}).join("");
+  $("mine").innerHTML=(state.mine||[]).map(function(m,i){return '<div><span>'+esc(m)+'</span><button type="button" class="x" data-mrm="'+i+'" aria-label="Remove">×</button></div>';}).join("");
+}
+function renderPrompt(){
+  $("ptext").innerHTML=showPrompt(buildPrompt());
+  var t=TOOL[state.tool];
+  $("openBtn").href=t.url;$("openBtn").textContent="Open "+t.name+" ↗";
+  document.querySelectorAll("[data-tool]").forEach(function(b){b.setAttribute("aria-pressed",String(b.getAttribute("data-tool")===state.tool));});
+  var wsn=(state.ws||{}).name,an=$("attachNote");
+  if(wsn){an.hidden=false;an.innerHTML="<b>Don’t forget:</b> before you press send, attach <b>"+esc(wsn)+"</b> in "+t.name+" with the attach button (the + or paperclip next to the message box).";}else{an.hidden=true;an.innerHTML="";}
+  $("after").innerHTML=state.tool==="claude"
+    ?"<b>After you paste it:</b> the game appears in a panel beside the chat. Click the stops to play. No panel? Type <b>“Show this as an HTML artifact.”</b> Want a change? Type one change at a time in the same chat."
+    :"<b>After you paste it:</b> the code opens in a canvas. Press <b>Preview</b> at the top of the canvas to play. Code stayed in the chat? Type <b>“Open this in a canvas.”</b> Want a change? Type one change at a time in the same chat.";
+}
+function renderFields(){
+  document.querySelectorAll("[data-f]").forEach(function(el){if(document.activeElement!==el)el.value=state[el.getAttribute("data-f")]||"";});
+  $("exText").textContent=state.example?"The AIDA lesson is filled in as an example.":"Your own lesson. The prompt updates as you go.";
+  $("exBtn").style.display=state.example?"none":"";
+}
+function renderAll(){renderFields();renderStages();renderValues();renderExtras();renderPrompt();}
+function edited(){if(state.example){state.example=false;renderFields();}save();}
+
+/* ---- copy ---- */
+function copyText(text,cb){
+  function fallback(){var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand("copy");}catch(e){}document.body.removeChild(ta);cb(ok);}
+  try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(function(){cb(true);},fallback);else fallback();}catch(e){fallback();}
+}
+function focusSame(sel){var el=document.querySelector(sel);if(el)el.focus();}
+function cssq(s){return String(s).replace(/"/g,'\\"');}
+
+/* ---- events ---- */
+document.addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t)return;
+  if(t.hasAttribute("data-tool")){state.tool=t.getAttribute("data-tool");save();renderPrompt();return;}
+  if(t.hasAttribute("data-v")){
+    var n=t.getAttribute("data-v"),i=state.order.indexOf(n);
+    if(i>-1){state.order.splice(i,1);delete state.values[n];}else{state.order.push(n);state.values[n]=[];}
+    edited();renderValues();renderPrompt();focusSame('[data-v="'+cssq(n)+'"]');return;
+  }
+  if(t.hasAttribute("data-vs")){
+    var v=t.getAttribute("data-vs"),s=t.getAttribute("data-s"),arr=state.values[v]||(state.values[v]=[]),k=arr.indexOf(s);
+    if(k>-1)arr.splice(k,1);else arr.push(s);
+    edited();renderValues();renderPrompt();focusSame('[data-vs="'+cssq(v)+'"][data-s="'+s+'"]');return;
+  }
+  if(t.hasAttribute("data-rm")){var r=t.getAttribute("data-rm");state.order=state.order.filter(function(x){return x!==r;});delete state.values[r];edited();renderValues();renderPrompt();return;}
+  if(t.hasAttribute("data-x")){var id=t.getAttribute("data-x");state.extras[id]=!state.extras[id];edited();renderExtras();renderPrompt();focusSame('[data-x="'+id+'"]');return;}
+  if(t.hasAttribute("data-mrm")){state.mine.splice(+t.getAttribute("data-mrm"),1);edited();renderExtras();renderPrompt();return;}
+  if(t.hasAttribute("data-idea")){state.theme=t.getAttribute("data-idea");edited();$("f-theme").value=state.theme;renderPrompt();return;}
+  if(t.id==="ownAdd"){addOwn();return;}
+  if(t.id==="wsRemove"){state.ws={name:"",text:(state.ws||{}).text||""};edited();renderStages();renderPrompt();return;}
+  if(t.id==="clearBtn"){state=blank();save();renderAll();$("f-cls").focus();return;}
+  if(t.id==="exBtn"){var tool=state.tool;state=JSON.parse(JSON.stringify(EXAMPLE));state.tool=tool;save();renderAll();return;}
+  if(t.id==="copyBtn"){
+    copyText(plain(buildPrompt()),function(ok){
+      var c=$("copied");c.textContent=ok?"Copied! Now open "+TOOL[state.tool].name+", start a new chat and paste it.":"Copy was blocked. Click in the prompt, press Ctrl+A then Ctrl+C.";
+      c.style.color=ok?"":"#F3B5C2";clearTimeout(c._t);c._t=setTimeout(function(){c.textContent="";},6000);
+    });return;
+  }
+});
+function addOwn(){var v=$("ownText").value.trim();if(!v)return;state.mine.push(v);$("ownText").value="";edited();renderExtras();renderPrompt();$("ownText").focus();}
+$("ownText").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();addOwn();}});
+document.addEventListener("input",function(e){var el=e.target;
+  if(el.hasAttribute("data-f")){state[el.getAttribute("data-f")]=el.value;edited();renderPrompt();return;}
+  if(el.id==="wsText"){if(!state.ws)state.ws={name:"",text:""};state.ws.text=el.value;edited();renderPrompt();return;}
+  if(el.hasAttribute("data-act")){if(!state.acts)state.acts={};state.acts[el.getAttribute("data-act")]=el.value;edited();renderPrompt();}
+});
+document.addEventListener("change",function(e){
+  var el=e.target;
+  if(el.hasAttribute("data-time")){state.times[el.getAttribute("data-time")]=+el.value;edited();renderStages();renderPrompt();focusSame('[data-time="'+el.getAttribute("data-time")+'"]');return;}
+  if(el.id==="wsFile"&&el.files&&el.files[0]){
+    var file=el.files[0];if(!state.ws)state.ws={name:"",text:""};state.ws.name=file.name;
+    var done=function(){edited();renderStages();renderPrompt();var w=$("wsFile");if(w)w.focus();};
+    if(/\.txt$/i.test(file.name)&&!state.ws.text&&file.size<20000){var rd=new FileReader();rd.onload=function(){state.ws.text=String(rd.result||"").trim();done();};rd.onerror=done;rd.readAsText(file);}else done();
+    return;
+  }
+  if(el.id==="assessType"){state.assess=el.value;edited();renderStages();renderValues();renderPrompt();focusSame("#assessType");return;}
+});
+
+/* ---- boot ---- */
+var booted=false;
+function start(snap){
+  if(booted)return;booted=true;
+  var src=(snap&&snap.times)?snap:load();
+  if(src&&src.times){var b=blank();Object.keys(b).forEach(function(k){if(src[k]!==undefined)b[k]=src[k];});if(!src.acts&&src.example)b.acts=JSON.parse(JSON.stringify(EXAMPLE.acts));state=b;}
+  renderAll();
+}
+var hot=window.claude&&window.claude.hot;
+if(hot&&hot.snapshot){try{hot.snapshot(function(){return state;});}catch(e){}}
+if(hot&&hot.ready)hot.ready(start);else start((hot&&hot.data)||{});
+})();
+</script>
+</body>
+</html>
